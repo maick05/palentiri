@@ -1,6 +1,6 @@
 export interface Article {
   title: string;
-  journalId: string;
+  orgId: string;
   resume: string;
   category: string;
   author: string;

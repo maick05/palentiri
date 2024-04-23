@@ -1,8 +1,8 @@
 import { BadRequestException, Controller, Get, Param } from '@nestjs/common';
-import { OesteScraperService } from './scraping/journals/OesteScraper.service';
+import { OesteScraperService } from './scraping/orgs/OesteScraper.service';
 import { Article } from './interface/Article';
-import { CrusoeScraperService } from './scraping/journals/CrusoeScraper.service';
-import { AntagonistaScraperService } from './scraping/journals/AntagonistaScraper.service';
+import { CrusoeScraperService } from './scraping/orgs/CrusoeScraper.service';
+import { AntagonistaScraperService } from './scraping/orgs/AntagonistaScraper.service';
 
 @Controller('scraping')
 export class ScrapingController {
@@ -12,24 +12,24 @@ export class ScrapingController {
     private readonly antagonistaService: AntagonistaScraperService,
   ) {}
 
-  @Get('/:journal/:sufix')
+  @Get('/:company/:sufix')
   scrapeBySufix(
-    @Param('journal') journal: string,
+    @Param('company') company: string,
     @Param('sufix') sufix?: string,
   ) {
-    return this.scrapeNewsList(journal, sufix);
+    return this.scrapeNewsList(company, sufix);
   }
 
-  @Get('/:journal')
-  scrape(@Param('journal') journal: string) {
-    return this.scrapeNewsList(journal);
+  @Get('/:company')
+  scrape(@Param('company') company: string) {
+    return this.scrapeNewsList(company);
   }
 
   private async scrapeNewsList(
-    journal: string,
+    company: string,
     sufix = '',
   ): Promise<Article[]> {
-    switch (journal) {
+    switch (company) {
       case 'oeste':
         return this.oesteService.scrapeNewsList(sufix);
       case 'crusoe':
@@ -37,7 +37,7 @@ export class ScrapingController {
       case 'antagonista':
         return this.antagonistaService.scrapeNewsList(sufix);
       default:
-        throw new BadRequestException('Invalid journal.');
+        throw new BadRequestException('Invalid News Org Name.');
     }
   }
 }

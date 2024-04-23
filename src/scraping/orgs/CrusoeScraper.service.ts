@@ -47,7 +47,7 @@ export class CrusoeScraperService extends AbstractScraperService {
 
     const date = this.getElementValue(element, '.creator .data');
     return {
-      journalId: element.prop('id'),
+      orgId: element.prop('id'),
       title: this.getElementValue(element, '.title h2', '', title),
       category: 'politica',
       author: this.getElementValue(element, '.creator .autor'),

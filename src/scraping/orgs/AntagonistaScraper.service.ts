@@ -128,7 +128,7 @@ export class AntagonistaScraperService extends AbstractScraperService {
       }
 
       articles.push({
-        journalId: this.getJournalId(link),
+        orgId: this.getOrgId(link),
         title: titleItem,
         category,
         author: '',
@@ -193,7 +193,7 @@ export class AntagonistaScraperService extends AbstractScraperService {
       }
 
       articles.push({
-        journalId: this.getJournalId(link),
+        orgId: this.getOrgId(link),
         title: titleItem,
         category,
         author: this.getElementValue(element, `.${sufix}-area__author`),
@@ -250,7 +250,7 @@ export class AntagonistaScraperService extends AbstractScraperService {
     }
   }
 
-  protected getJournalId(link: string): string {
+  protected getOrgId(link: string): string {
     if (link.split('/').length < 4) return link;
     return link
       .replace(`${this.url}/`, '')

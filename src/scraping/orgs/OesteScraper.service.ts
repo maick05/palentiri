@@ -47,9 +47,7 @@ export class OesteScraperService extends AbstractScraperService {
     );
 
     return {
-      journalId: this.getJournalId(
-        link.replace(`${this.url}/${sufix}/`, `${sufix}__`),
-      ),
+      orgId: this.getOrgId(link.replace(`${this.url}/${sufix}/`, `${sufix}__`)),
       title: this.getElementValue(element, 'h2', '', title),
       category: sufix,
       author: this.getElementValue(

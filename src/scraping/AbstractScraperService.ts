@@ -135,15 +135,15 @@ export abstract class AbstractScraperService {
     };
   }
 
-  protected getJournalId(link: string): string {
+  protected getOrgId(link: string): string {
     return link.split('-').join('_').replace('/', '');
   }
 
   protected cleanItems(articles: Article[]): Article[] {
     const seen = new Map();
     return articles.filter((article) => {
-      if (!seen.has(article.journalId)) {
-        seen.set(article.journalId, true);
+      if (!seen.has(article.orgId)) {
+        seen.set(article.orgId, true);
         return true;
       }
       return false;
