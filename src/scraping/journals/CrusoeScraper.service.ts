@@ -18,6 +18,23 @@ export class CrusoeScraperService extends AbstractScraperService {
         if (!elements.length) return [];
 
         for (const e of elements as unknown as any[]) {
+          const parseISO = (dataString) => {
+            const partes = dataString.split(' ');
+
+            const dataPartes = partes[0].split('.');
+            const dia = dataPartes[0];
+            const mes = dataPartes[1] - 1; // Ajusta o mês para a indexação base-0 do JavaScript
+            const ano = dataPartes[2];
+
+            const horaPartes = partes[1].split(':');
+            const horas = horaPartes[0];
+            const minutos = horaPartes[1];
+
+            const data = new Date(ano, mes, dia, horas, minutos);
+
+            return data.toISOString();
+          };
+
           const link = e.querySelector('.link-internal123')
             ? e.querySelector('.link-internal123').getAttribute('href')
             : '';
@@ -45,7 +62,7 @@ export class CrusoeScraperService extends AbstractScraperService {
             company: 'Revista Crusoé',
             resume: e.querySelector('p') ? e.querySelector('p').innerText : '',
             date: e.querySelector('.creator .data')
-              ? e.querySelector('.creator .data').innerText
+              ? parseISO(e.querySelector('.creator .data').innerText)
               : '',
           });
         }

@@ -25,6 +25,23 @@ export class AntagonistaScraperService extends AbstractScraperService {
 
     const items = await page.evaluate(
       async (params) => {
+        const parseISO = (dataString) => {
+          const partes = dataString.split(' ');
+
+          const dataPartes = partes[0].split('.');
+          const dia = dataPartes[0];
+          const mes = dataPartes[1] - 1; // Ajusta o mês para a indexação base-0 do JavaScript
+          const ano = dataPartes[2];
+
+          const horaPartes = partes[1].split(':');
+          const horas = horaPartes[0];
+          const minutos = horaPartes[1];
+
+          const data = new Date(ano, mes, dia, horas, minutos);
+
+          return data.toISOString();
+        };
+
         const getCategory = (tagText, link, sufix) => {
           if (sufix == 'economia') return 'economia';
           const tagTrim = tagText.trim().replace(' ', '').replace('/n', '');
@@ -80,8 +97,10 @@ export class AntagonistaScraperService extends AbstractScraperService {
 
           articles.push({
             journalId: link
-              .replace(`${params.url}/${params.sufix}/`, '')
-              .replace('-', '__'),
+              .replace(`${params.url}/`, '')
+              .replace(`${link.split('/')[3]}/`, `${link.split('/')[3]}__`)
+              .replaceAll('-', '_')
+              .replace('/', ''),
             title:
               e.querySelector(`.${params.sufix}-area__title-h3`) &&
               e.querySelector(`.${params.sufix}-area__title-h3`).innerText
@@ -95,9 +114,11 @@ export class AntagonistaScraperService extends AbstractScraperService {
             date: e.querySelectorAll(
               `.${params.sufix}-area__date.${params.sufix}-area__date--desktop span`,
             ).length
-              ? e.querySelectorAll(
-                  `.${params.sufix}-area__date.${params.sufix}-area__date--desktop span`,
-                )[0].innerText
+              ? parseISO(
+                  e.querySelectorAll(
+                    `.${params.sufix}-area__date.${params.sufix}-area__date--desktop span`,
+                  )[0].innerText,
+                )
               : '',
           });
         }
@@ -109,13 +130,25 @@ export class AntagonistaScraperService extends AbstractScraperService {
   }
 
   private async evaluateTwoCol(page: Page, sufix = ''): Promise<Article[]> {
-    await page.waitForSelector(`.${sufix}-area__two-col .row .col`, {
-      visible: true,
-      timeout: 3000,
-    });
-
     const items = await page.evaluate(
       async (params) => {
+        const parseISO = (dataString) => {
+          const partes = dataString.split(' ');
+
+          const dataPartes = partes[0].split('.');
+          const dia = dataPartes[0];
+          const mes = dataPartes[1] - 1; // Ajusta o mês para a indexação base-0 do JavaScript
+          const ano = dataPartes[2];
+
+          const horaPartes = partes[1].split(':');
+          const horas = horaPartes[0];
+          const minutos = horaPartes[1];
+
+          const data = new Date(ano, mes, dia, horas, minutos);
+
+          return data.toISOString();
+        };
+
         const getCategory = (tagText, link, sufix) => {
           if (sufix == 'economia') return 'economia';
           const tagTrim = tagText.trim().replace(' ', '').replace('/n', '');
@@ -171,8 +204,10 @@ export class AntagonistaScraperService extends AbstractScraperService {
 
           articles.push({
             journalId: link
-              .replace(`${params.url}/${params.sufix}/`, '')
-              .replace('-', '__'),
+              .replace(`${params.url}/`, '')
+              .replace(`${link.split('/')[3]}/`, `${link.split('/')[3]}__`)
+              .replaceAll('-', '_')
+              .replace('/', ''),
             title:
               e.querySelector(`.${params.sufix}-area__title-h3`) &&
               e.querySelector(`.${params.sufix}-area__title-h3`).innerText
@@ -184,7 +219,7 @@ export class AntagonistaScraperService extends AbstractScraperService {
             company: 'O Antagonista',
             resume: e.querySelector('p') ? e.querySelector('p').innerText : '',
             date: e.querySelector('.date-time__date')
-              ? e.querySelector('.date-time__date').innerText
+              ? parseISO(e.querySelector('.date-time__date').innerText)
               : '',
           });
         }
