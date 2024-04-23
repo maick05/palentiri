@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { AbstractScraperService } from '../AbstractScraperService';
 import { Article } from 'src/interface/Article';
 import { Page } from 'puppeteer';
+import { CheerioAPI } from 'cheerio';
 
 @Injectable()
 export class OesteScraperService extends AbstractScraperService {
@@ -9,9 +10,10 @@ export class OesteScraperService extends AbstractScraperService {
     super();
     this.url = 'https://revistaoeste.com';
     this.validSufixes = ['politica', 'economia'];
+    this.companyName = 'Revista Oeste';
   }
 
-  protected async evaluate(page: Page, sufix = ''): Promise<Article[]> {
+  protected async evaluate(page: Page, sufix = ''): Promise<CheerioAPI> {
     await page.waitForSelector(
       'article.card-post--list, article.card-post--grid',
       {
@@ -20,59 +22,59 @@ export class OesteScraperService extends AbstractScraperService {
       },
     );
 
-    const items = await page.evaluate(
-      async (params) => {
-        const articles = [];
-        const elements = document.querySelectorAll(
-          'article.card-post--grid, article.card-post--list',
-        );
-        await elements[elements.length - 1]
-          .querySelector('.card-post__title')
-          .scrollIntoView();
+    await page.evaluate(async () => {
+      const elements = document.querySelectorAll(
+        'article.card-post--grid, article.card-post--list',
+      );
+      await elements[elements.length - 1]
+        .querySelector('.card-post__title')
+        .scrollIntoView();
+    });
 
-        if (!elements.length) return [];
+    return super.evaluate(page, sufix);
+  }
 
-        for (const e of elements as unknown as any[]) {
-          const link = e.querySelector('.card-post__title')
-            ? e.querySelector('.card-post__title').getAttribute('href')
-            : '';
+  protected async extractItems(
+    page: Page,
+    $: CheerioAPI,
+    sufix?: string,
+  ): Promise<Article[]> {
+    const articles = [];
+    const elements = $('article.card-post--grid, article.card-post--list');
+    if (!elements.length) return [];
+    let i = 0;
+    for await (const e of elements.get()) {
+      const element = elements.eq(i);
+      i++;
+      const link = await this.getElementValue(
+        element,
+        '.card-post__title',
+        'href',
+      );
 
-          const titleStr = link
-            .replace(`${params.url}/${params.sufix}/`, '')
-            .split('-')
-            .join(' ');
-          const title =
-            titleStr.charAt(0).toUpperCase() +
-            titleStr.slice(1, -1).toLowerCase();
+      const { title } = this.getTitleLink(
+        link.replace(`${this.url}/${sufix}/`, ''),
+      );
 
-          articles.push({
-            journalId: link
-              .replace(`${params.url}/${params.sufix}/`, `${params.sufix}__`)
-              .split('-')
-              .join('_')
-              .replace('/', ''),
-            title:
-              e.querySelector('h2') && e.querySelector('h2').innerText
-                ? e.querySelector('h2').innerText
-                : title,
-            category: params.sufix,
-            author: e.querySelector('.text-gray-500.text-xs.mt-auto a')
-              ? e.querySelector('.text-gray-500.text-xs.mt-auto a').innerText
-              : '',
-            link,
-            company: 'Revista Oeste',
-            resume: e.querySelector('p.text-base')
-              ? e.querySelector('p.text-base').innerText
-              : '',
-            date: e.querySelector('time')
-              ? e.querySelector('time').getAttribute('datetime')
-              : '',
-          });
-        }
-        return articles;
-      },
-      { url: this.url, sufix },
-    );
-    return items;
+      articles.push({
+        journalId: link
+          .replace(`${this.url}/${sufix}/`, `${sufix}__`)
+          .split('-')
+          .join('_')
+          .replace('/', ''),
+        title: await this.getElementValue(element, 'h2', '', title),
+        category: sufix,
+        author: await this.getElementValue(
+          element,
+          '.text-gray-500.text-xs.mt-auto a',
+          '',
+        ),
+        link,
+        company: this.companyName,
+        resume: await this.getElementValue(element, 'p.text-base', ''),
+        date: await this.getElementValue(element, 'time', 'datetime'),
+      });
+    }
+    return articles;
   }
 }

@@ -2,74 +2,67 @@ import { Injectable } from '@nestjs/common';
 import { AbstractScraperService } from '../AbstractScraperService';
 import { Article } from 'src/interface/Article';
 import { Page } from 'puppeteer';
+import { CheerioAPI } from 'cheerio';
 
 @Injectable()
 export class CrusoeScraperService extends AbstractScraperService {
   constructor() {
     super();
     this.url = 'https://crusoe.com.br/#ultimas';
+    this.companyName = 'Revista Crusoé';
   }
 
-  protected async evaluate(page: Page, sufix = ''): Promise<Article[]> {
-    const items = await page.evaluate(
-      async () => {
-        const articles = [];
-        const elements = document.querySelectorAll('.post.hasimg');
-        if (!elements.length) return [];
+  private parseIso(dataString: string): string {
+    const partes = dataString.split(' ');
 
-        for (const e of elements as unknown as any[]) {
-          const parseISO = (dataString) => {
-            const partes = dataString.split(' ');
+    const dataPartes = partes[0].split('.');
 
-            const dataPartes = partes[0].split('.');
-            const dia = dataPartes[0];
-            const mes = dataPartes[1] - 1; // Ajusta o mês para a indexação base-0 do JavaScript
-            const ano = dataPartes[2];
+    if (dataPartes.length < 3) return '';
 
-            const horaPartes = partes[1].split(':');
-            const horas = horaPartes[0];
-            const minutos = horaPartes[1];
+    const dia = Number(dataPartes[0]);
+    const mes = Number(dataPartes[1]) - 1;
+    const ano = Number(dataPartes[2]);
 
-            const data = new Date(ano, mes, dia, horas, minutos);
+    const horaPartes = partes[1].split(':');
+    const horas = Number(horaPartes[0]);
+    const minutos = Number(horaPartes[1]);
 
-            return data.toISOString();
-          };
+    const data = new Date(ano, mes, dia, horas, minutos);
 
-          const link = e.querySelector('.link-internal123')
-            ? e.querySelector('.link-internal123').getAttribute('href')
-            : '';
+    return data.toISOString();
+  }
 
-          const titleStr = link
-            .replace(`https://crusoe.com.br/diario/`, '')
-            .split('-')
-            .join(' ');
-          const title =
-            titleStr.charAt(0).toUpperCase() +
-            titleStr.slice(1, -1).toLowerCase();
+  protected async extractItems(page: Page, $: CheerioAPI): Promise<Article[]> {
+    const articles = [];
+    const elements = $('.post.hasimg');
+    if (!elements.length) return [];
+    let i = 0;
+    for await (const e of elements.get()) {
+      const element = elements.eq(i);
+      i++;
+      const link = await this.getElementValue(
+        element,
+        '.link-internal123',
+        'href',
+      );
 
-          articles.push({
-            journalId: e.getAttribute('id'),
-            title:
-              e.querySelector('.title h2') &&
-              e.querySelector('.title h2').innerText
-                ? e.querySelector('.title h2').innerText
-                : title,
-            category: 'politica',
-            author: e.querySelector('.creator .autor')
-              ? e.querySelector('.creator .autor').innerText
-              : '',
-            link,
-            company: 'Revista Crusoé',
-            resume: e.querySelector('p') ? e.querySelector('p').innerText : '',
-            date: e.querySelector('.creator .data')
-              ? parseISO(e.querySelector('.creator .data').innerText)
-              : '',
-          });
-        }
-        return articles;
-      },
-      { url: this.url, sufix },
-    );
-    return items;
+      const { title } = this.getTitleLink(
+        link.replace(`https://crusoe.com.br/diario/`, ''),
+      );
+
+      const date = await this.getElementValue(element, '.creator .data');
+
+      articles.push({
+        journalId: element.prop('id'),
+        title: await this.getElementValue(element, '.title h2', '', title),
+        category: 'politica',
+        author: await this.getElementValue(element, '.creator .autor'),
+        link,
+        company: this.companyName,
+        resume: await this.getElementValue(element, 'p', ''),
+        date: date ? this.parseIso(date) : '',
+      });
+    }
+    return articles;
   }
 }
