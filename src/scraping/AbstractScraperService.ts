@@ -93,7 +93,9 @@ export abstract class AbstractScraperService {
     if (!elements.length) return [];
     elements.each((i, elem) => {
       try {
-        articles.push(this.extractArticleItem($, $(elem), sufix));
+        const item = this.extractArticleItem($, $(elem), sufix);
+        if (!item) return;
+        articles.push(item);
       } catch (err) {
         throw new InternalServerErrorException(
           `Erro ao extrair item '${elem}': ${JSON.stringify(err)}`,
@@ -140,13 +142,14 @@ export abstract class AbstractScraperService {
   }
 
   protected cleanItems(articles: Article[]): Article[] {
-    const seen = new Map();
-    return articles.filter((article) => {
-      if (!seen.has(article.orgId)) {
-        seen.set(article.orgId, true);
-        return true;
-      }
-      return false;
-    });
+    return articles;
+    // const seen = new Map();
+    // return articles.filter((article) => {
+    //   if (!seen.has(article.orgId)) {
+    //     seen.set(article.orgId, true);
+    //     return true;
+    //   }
+    //   return false;
+    // });
   }
 }

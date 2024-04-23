@@ -54,7 +54,7 @@ export class CrusoeScraperService extends AbstractScraperService {
       link,
       company: this.companyName,
       resume: this.getElementValue(element, 'p', ''),
-      date: date ? this.parseIso(date) : new Date(),
+      date: date ? this.parseIso(date) : new Date().toISOString(),
     };
   }
 }

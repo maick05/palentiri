@@ -111,7 +111,7 @@ export class AntagonistaScraperService extends AbstractScraperService {
               .eq(0)
               .text(),
           )
-        : '';
+        : new Date().toISOString();
 
       const titleItem = this.getElementValue(
         element,
@@ -200,7 +200,7 @@ export class AntagonistaScraperService extends AbstractScraperService {
         link,
         company: this.companyName,
         resume: this.getElementValue(element, 'p', ''),
-        date: date ? this.parseISO(date) : '',
+        date: date ? this.parseISO(date) : new Date().toISOString(),
       });
     });
     return articles;
