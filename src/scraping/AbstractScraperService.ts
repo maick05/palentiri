@@ -1,5 +1,9 @@
 /* eslint-disable @typescript-eslint/no-this-alias */
-import { BadRequestException, Logger } from '@nestjs/common';
+import {
+  BadRequestException,
+  InternalServerErrorException,
+  Logger,
+} from '@nestjs/common';
 import * as puppeteer from 'puppeteer';
 import { Page } from 'puppeteer';
 import { HEADLESS } from 'src/constants/browser';
@@ -13,37 +17,59 @@ export abstract class AbstractScraperService {
   protected validSufixes = [];
   protected logger: Logger = new Logger(AbstractScraperService.name);
   protected companyName;
+  protected elementsSelector;
 
   private async initBrowser() {
-    this.browser = await puppeteer.launch({
-      headless: HEADLESS,
-      args: ['--start-maximized'],
-    });
+    try {
+      this.browser = await puppeteer.launch({
+        headless: HEADLESS,
+        args: ['--start-maximized'],
+      });
+    } catch (err) {
+      throw new InternalServerErrorException(
+        `Erro ao iniciar browser: ${JSON.stringify(err)}`,
+      );
+    }
   }
 
   protected async goToPage(sufix = ''): Promise<puppeteer.Page> {
     await this.initBrowser();
-    const page = await this.browser.newPage();
-    await page.setUserAgent(
-      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.159 Safari/537.36',
-    );
+    try {
+      const page = await this.browser.newPage();
+      await page.setUserAgent(
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.159 Safari/537.36',
+      );
 
-    await page.setViewport({ width: 1380, height: 1080 });
+      await page.setViewport({ width: 1380, height: 1080 });
 
-    this.logger.log(`Chamando url... ${this.url}/${sufix}`);
-    await page.goto(`${this.url}/${sufix}`, { waitUntil: 'networkidle2' });
-    return page;
+      this.logger.log(`Chamando url... ${this.url}/${sufix}`);
+      await page.goto(`${this.url}/${sufix}`, { waitUntil: 'networkidle2' });
+      return page;
+    } catch (err) {
+      throw new InternalServerErrorException(
+        `Erro ao carregar página: ${JSON.stringify(err)}`,
+      );
+    }
   }
 
   public async scrapeNewsList(sufix = ''): Promise<Article[]> {
-    if (this.validSufixes.length && !this.validSufixes.includes(sufix))
+    if (
+      (this.validSufixes.length && !this.validSufixes.includes(sufix)) ||
+      (!this.validSufixes.length && sufix.length)
+    )
       throw new BadRequestException('Invalid Sufix');
 
     const page = await this.goToPage(sufix);
-    const contentHtml = await this.evaluate(page, sufix);
+    let contentHtml;
+    try {
+      contentHtml = await this.evaluate(page, sufix);
+    } catch (err) {
+      throw new InternalServerErrorException(
+        `Erro ao evaluate pagina: ${JSON.stringify(err)}`,
+      );
+    }
     const items = this.extractItems(contentHtml, sufix);
-
-    return items;
+    return this.cleanItems(items);
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -53,21 +79,46 @@ export abstract class AbstractScraperService {
     return cheerio.load(html);
   }
 
-  protected abstract extractItems(
+  protected extractItems($: CheerioAPI, sufix = ''): Article[] {
+    const articles = [];
+    let elements;
+    try {
+      elements = $(this.elementsSelector);
+    } catch (err) {
+      throw new InternalServerErrorException(
+        `Erro carregar html Cheerio: ${JSON.stringify(err)}`,
+      );
+    }
+
+    if (!elements.length) return [];
+    elements.each((i, elem) => {
+      try {
+        articles.push(this.extractArticleItem($, $(elem), sufix));
+      } catch (err) {
+        throw new InternalServerErrorException(
+          `Erro ao extrair item '${elem}': ${JSON.stringify(err)}`,
+        );
+      }
+    });
+    return articles;
+  }
+
+  protected abstract extractArticleItem(
     $: CheerioAPI,
+    element,
     sufix?: string,
-  ): Promise<Article[]>;
+  ): Article;
 
   public async closeBrowser() {
     await this.browser.close();
   }
 
-  protected async getElementValue(
+  protected getElementValue(
     element: Cheerio<Element> | any,
     selector: string,
     attr = '',
     defaultValue = '',
-  ): Promise<string> {
+  ): string {
     return element.find(selector).length
       ? attr
         ? element.find(selector).attr(attr)
@@ -82,5 +133,20 @@ export abstract class AbstractScraperService {
       title:
         titleStr.charAt(0).toUpperCase() + titleStr.slice(1, -1).toLowerCase(),
     };
+  }
+
+  protected getJournalId(link: string): string {
+    return link.split('-').join('_').replace('/', '');
+  }
+
+  protected cleanItems(articles: Article[]): Article[] {
+    const seen = new Map();
+    return articles.filter((article) => {
+      if (!seen.has(article.journalId)) {
+        seen.set(article.journalId, true);
+        return true;
+      }
+      return false;
+    });
   }
 }

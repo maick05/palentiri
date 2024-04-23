@@ -4,7 +4,7 @@ export interface Article {
   resume: string;
   category: string;
   author: string;
-  date: Date;
+  date: Date | string;
   link: string;
   company: string;
 }

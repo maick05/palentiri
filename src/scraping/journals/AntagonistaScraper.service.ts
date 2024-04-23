@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Injectable } from '@nestjs/common';
 import { AbstractScraperService } from '../AbstractScraperService';
 import { Article } from 'src/interface/Article';
@@ -10,10 +11,11 @@ export class AntagonistaScraperService extends AbstractScraperService {
     super();
     this.url = 'https://oantagonista.com.br';
     this.companyName = 'O Antagonista';
+    this.validSufixes = ['ultimas-noticias', 'economia', 'mundo', 'brasil'];
   }
 
   protected async evaluate(page: Page, sufix = ''): Promise<CheerioAPI> {
-    await page.waitForSelector(`.${sufix}-area__highlight .row .col`, {
+    await page.waitForSelector(`.ultimas-noticias-area__highlight .row .col`, {
       visible: true,
       timeout: 15000,
     });
@@ -21,43 +23,44 @@ export class AntagonistaScraperService extends AbstractScraperService {
     return super.evaluate(page, sufix);
   }
 
-  protected async extractItems($: CheerioAPI, sufix = ''): Promise<Article[]> {
-    const highLight = await this.extractHighlight($, sufix);
-    const twoCol = await this.extractBySection(
+  protected extractItems($: CheerioAPI, sufix = ''): Article[] {
+    const fixedSufix = 'ultimas-noticias';
+    const highLight = this.extractHighlight($, fixedSufix);
+    const twoCol = this.extractBySection(
       $,
-      sufix,
+      fixedSufix,
       'area__two-col .row .col',
       'TwoCol',
     );
-    const rightHighLight = await this.extractBySection(
+    const rightHighLight = this.extractBySection(
       $,
-      sufix,
+      fixedSufix,
       'area__item-highlight',
       'HighLight',
     );
-    const areaItem = await this.extractBySection(
+    const areaItem = this.extractBySection(
       $,
-      sufix,
+      fixedSufix,
       'area__item-',
       'AreaItem',
     );
-    const areaItemLarge = await this.extractBySection(
+    const areaItemLarge = this.extractBySection(
       $,
-      sufix,
+      fixedSufix,
       'area__item-large',
       'AreaItemLarge',
     );
 
-    const mostRead = await this.extractBySection(
+    const mostRead = this.extractBySection(
       $,
-      sufix,
+      fixedSufix,
       'area__item-most-read',
       'MostRead',
     );
 
-    const areaItemText = await this.extractBySection(
+    const areaItemText = this.extractBySection(
       $,
-      sufix,
+      fixedSufix,
       'area__item-text',
       'AreaItemText',
     );
@@ -73,23 +76,19 @@ export class AntagonistaScraperService extends AbstractScraperService {
     ];
   }
 
-  protected async extractHighlight($: CheerioAPI, sufix): Promise<Article[]> {
+  protected extractHighlight($: CheerioAPI, sufix): Article[] {
     const articles = [];
     const elements = $(`.${sufix}-area__highlight .row .col`);
     if (!elements.length) return [];
     let i = 0;
-    for await (const e of elements.get()) {
+    for (const e of elements.get()) {
       const element = elements.eq(i);
       i++;
 
       const parent = element.parent().parent();
-      const link = await this.getElementValue(
-        parent,
-        `.${sufix}-area__link`,
-        'href',
-      );
+      const link = this.getElementValue(parent, `.${sufix}-area__link`, 'href');
 
-      const categoryText = await this.getElementValue(
+      const categoryText = this.getElementValue(
         element,
         `.${sufix}-area__category`,
       );
@@ -114,7 +113,7 @@ export class AntagonistaScraperService extends AbstractScraperService {
           )
         : '';
 
-      const titleItem = await this.getElementValue(
+      const titleItem = this.getElementValue(
         element,
         `.${sufix}-area__title-h3`,
         '',
@@ -135,36 +134,34 @@ export class AntagonistaScraperService extends AbstractScraperService {
         author: '',
         link,
         company: this.companyName,
-        resume: await this.getElementValue(element, 'p', ''),
+        resume: this.getElementValue(element, 'p', ''),
         date,
       });
     }
     return articles;
   }
 
-  protected async extractBySection(
+  protected extractBySection(
     $: CheerioAPI,
     sufix: string,
     selector: string,
     logIdentif: string,
-  ): Promise<Article[]> {
+  ): Article[] {
     const articles = [];
     const elements = $(`.${sufix}-${selector}`);
     if (!elements.length) return [];
-    let i = 0;
-    for await (const e of elements.get()) {
-      const element = elements.eq(i);
-      i++;
+    elements.each((i, e) => {
+      const element = $(e);
 
-      const link = await this.getElementValue(
+      const link = this.getElementValue(
         element,
         `.${sufix}-area__link`,
         'href',
       );
 
-      if (!link.length) continue;
+      if (!link.length) return;
 
-      const categoryText = await this.getElementValue(
+      const categoryText = this.getElementValue(
         element,
         `.${sufix}-area__category`,
       );
@@ -177,11 +174,11 @@ export class AntagonistaScraperService extends AbstractScraperService {
         this.logger.warn(
           `[Log WebScraping][${logIdentif}] Ignorando categoria ${category}: ${title}`,
         );
-        continue;
+        return;
       }
 
-      const date = await this.getElementValue(element, '.date-time__date');
-      const titleItem = await this.getElementValue(
+      const date = this.getElementValue(element, '.date-time__date');
+      const titleItem = this.getElementValue(
         element,
         `.${sufix}-area__title-h3`,
         '',
@@ -192,25 +189,28 @@ export class AntagonistaScraperService extends AbstractScraperService {
         this.logger.warn(
           `[Log WebScraping][${logIdentif}] Ignorando Notícia Crusoé ${titleItem}`,
         );
-        continue;
+        return;
       }
 
       articles.push({
         journalId: this.getJournalId(link),
         title: titleItem,
         category,
-        author: await this.getElementValue(element, `.${sufix}-area__author`),
+        author: this.getElementValue(element, `.${sufix}-area__author`),
         link,
         company: this.companyName,
-        resume: await this.getElementValue(element, 'p', ''),
+        resume: this.getElementValue(element, 'p', ''),
         date: date ? this.parseISO(date) : '',
       });
-    }
+    });
     return articles;
   }
 
   private parseISO(dataString: string): string {
-    const partes = dataString.trim().split(' ');
+    const partes = dataString.split(' ');
+
+    if (partes.length < 2) return '';
+
     const dataPartes = partes[0].split('.');
 
     if (dataPartes.length < 3) return '';
@@ -222,9 +222,14 @@ export class AntagonistaScraperService extends AbstractScraperService {
     const horaPartes = partes[1].split(':');
     const horas = Number(horaPartes[0]);
     const minutos = Number(horaPartes[1]);
+    try {
+      const data = new Date(ano, mes, dia, horas, minutos);
 
-    const data = new Date(ano, mes, dia, horas, minutos);
-    return data.toISOString();
+      return data.toISOString();
+    } catch {
+      this.logger.warn(`Data inválida: ${dataString}`);
+      return '';
+    }
   }
 
   private getCategory(tagText, link, sufix): string {
@@ -245,11 +250,20 @@ export class AntagonistaScraperService extends AbstractScraperService {
     }
   }
 
-  private getJournalId(link: string): string {
+  protected getJournalId(link: string): string {
+    if (link.split('/').length < 4) return link;
     return link
       .replace(`${this.url}/`, '')
       .replace(`${link.split('/')[3]}/`, `${link.split('/')[3]}__`)
       .replace('-', '_')
       .replace('/', '');
+  }
+
+  protected extractArticleItem(
+    $: CheerioAPI,
+    element: any,
+    sufix?: string,
+  ): Article {
+    throw new Error('Method not implemented.');
   }
 }

@@ -11,6 +11,7 @@ export class OesteScraperService extends AbstractScraperService {
     this.url = 'https://revistaoeste.com';
     this.validSufixes = ['politica', 'economia'];
     this.companyName = 'Revista Oeste';
+    this.elementsSelector = 'article.card-post--grid, article.card-post--list';
   }
 
   protected async evaluate(page: Page, sufix = ''): Promise<CheerioAPI> {
@@ -18,7 +19,7 @@ export class OesteScraperService extends AbstractScraperService {
       'article.card-post--list, article.card-post--grid',
       {
         visible: true,
-        timeout: 1000,
+        timeout: 5000,
       },
     );
 
@@ -34,46 +35,32 @@ export class OesteScraperService extends AbstractScraperService {
     return super.evaluate(page, sufix);
   }
 
-  protected async extractItems(
+  protected extractArticleItem(
     $: CheerioAPI,
+    element,
     sufix?: string,
-  ): Promise<Article[]> {
-    const articles = [];
-    const elements = $('article.card-post--grid, article.card-post--list');
-    if (!elements.length) return [];
-    let i = 0;
-    for await (const e of elements.get()) {
-      const element = elements.eq(i);
-      i++;
-      const link = await this.getElementValue(
+  ): Article {
+    const link = this.getElementValue(element, '.card-post__title', 'href');
+
+    const { title } = this.getTitleLink(
+      link.replace(`${this.url}/${sufix}/`, ''),
+    );
+
+    return {
+      journalId: this.getJournalId(
+        link.replace(`${this.url}/${sufix}/`, `${sufix}__`),
+      ),
+      title: this.getElementValue(element, 'h2', '', title),
+      category: sufix,
+      author: this.getElementValue(
         element,
-        '.card-post__title',
-        'href',
-      );
-
-      const { title } = this.getTitleLink(
-        link.replace(`${this.url}/${sufix}/`, ''),
-      );
-
-      articles.push({
-        journalId: link
-          .replace(`${this.url}/${sufix}/`, `${sufix}__`)
-          .split('-')
-          .join('_')
-          .replace('/', ''),
-        title: await this.getElementValue(element, 'h2', '', title),
-        category: sufix,
-        author: await this.getElementValue(
-          element,
-          '.text-gray-500.text-xs.mt-auto a',
-          '',
-        ),
-        link,
-        company: this.companyName,
-        resume: await this.getElementValue(element, 'p.text-base', ''),
-        date: await this.getElementValue(element, 'time', 'datetime'),
-      });
-    }
-    return articles;
+        '.text-gray-500.text-xs.mt-auto a',
+        '',
+      ),
+      link,
+      company: this.companyName,
+      resume: this.getElementValue(element, 'p.text-base', ''),
+      date: this.getElementValue(element, 'time', 'datetime'),
+    };
   }
 }
