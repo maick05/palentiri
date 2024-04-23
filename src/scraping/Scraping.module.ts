@@ -1,8 +1,20 @@
 import { Module } from '@nestjs/common';
-import { OesteScraperService } from './oeste/OesteScraper.service';
+import { OesteScraperService } from './journals/OesteScraper.service';
+import { CrusoeScraperService } from './journals/CrusoeScraper.service';
+import { ScrapingController } from 'src/ScrapingController';
+import { AntagonistaScraperService } from './journals/AntagonistaScraper.service';
 
 @Module({
-  providers: [OesteScraperService],
-  exports: [OesteScraperService],
+  controllers: [ScrapingController],
+  providers: [
+    OesteScraperService,
+    CrusoeScraperService,
+    AntagonistaScraperService,
+  ],
+  exports: [
+    OesteScraperService,
+    CrusoeScraperService,
+    AntagonistaScraperService,
+  ],
 })
 export class ScrapingModule {}

@@ -6,23 +6,24 @@ import { HEADLESS } from 'src/constants/browser';
 import { Article } from 'src/interface/Article';
 
 export abstract class AbstractScraperService {
+  protected ignoreCategories = ['esporte'];
   protected browser: puppeteer.Browser;
   protected url: string;
   protected validSufixes = [];
   protected logger: Logger = new Logger(AbstractScraperService.name);
 
-  constructor() {
-    this.initBrowser();
-  }
-
   private async initBrowser() {
     this.browser = await puppeteer.launch({
       headless: HEADLESS,
+      args: ['--start-maximized'],
     });
   }
 
   protected async goToPage(sufix = ''): Promise<puppeteer.Page> {
+    await this.initBrowser();
     const page = await this.browser.newPage();
+    await page.setViewport({ width: 1380, height: 1080 });
+
     this.logger.log(`Chamando url... ${this.url}/${sufix}`);
     await page.goto(`${this.url}/${sufix}`, { waitUntil: 'networkidle2' });
     return page;

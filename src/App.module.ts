@@ -1,10 +1,9 @@
 import { Module } from '@nestjs/common';
 import { ScrapingModule } from './scraping/scraping.module';
-import { NewsController } from './NewsController';
 
 @Module({
   imports: [ScrapingModule],
-  controllers: [NewsController],
+  controllers: [],
   providers: [],
 })
 export class AppModule {}
