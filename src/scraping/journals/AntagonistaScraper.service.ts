@@ -15,7 +15,7 @@ export class AntagonistaScraperService extends AbstractScraperService {
   protected async evaluate(page: Page, sufix = ''): Promise<CheerioAPI> {
     await page.waitForSelector(`.${sufix}-area__highlight .row .col`, {
       visible: true,
-      timeout: 3000,
+      timeout: 15000,
     });
 
     return super.evaluate(page, sufix);
@@ -27,9 +27,20 @@ export class AntagonistaScraperService extends AbstractScraperService {
     sufix = '',
   ): Promise<Article[]> {
     const highLight = await this.extractHighlight($, sufix);
-    const twoCol = await this.extractTwoCol($, sufix);
+    const twoCol = await this.extractByType(
+      $,
+      sufix,
+      'area__two-col .row .col',
+      'TwoCol',
+    );
+    const rightHighLight = await this.extractByType(
+      $,
+      sufix,
+      'area__item-highlight',
+      'HighLight',
+    );
 
-    return [...highLight, ...twoCol];
+    return [...highLight, ...twoCol, ...rightHighLight];
   }
 
   protected async extractHighlight($: CheerioAPI, sufix): Promise<Article[]> {
@@ -56,7 +67,9 @@ export class AntagonistaScraperService extends AbstractScraperService {
       const category = this.getCategory(categoryText, link, sufix);
 
       if (category == 'esporte') {
-        this.logger.warn(`[Log WebScraping] Ignorando categoria ${category}`);
+        this.logger.warn(
+          `[Log WebScraping][Highlight] Ignorando categoria ${category}`,
+        );
         continue;
       }
 
@@ -71,14 +84,23 @@ export class AntagonistaScraperService extends AbstractScraperService {
           )
         : '';
 
+      const titleItem = await this.getElementValue(
+        element,
+        `.${sufix}-area__title-h3`,
+        '',
+        title,
+      );
+
+      if (titleItem.startsWith('Crusoé: ')) {
+        this.logger.warn(
+          `[Log WebScraping][Highlight] Ignorando Notícia Crusoé ${titleItem}`,
+        );
+        continue;
+      }
+
       articles.push({
         journalId: this.getJournalId(link),
-        title: await this.getElementValue(
-          element,
-          `.${sufix}-area__title-h3`,
-          '',
-          title,
-        ),
+        title: titleItem,
         category,
         author: '',
         link,
@@ -90,9 +112,14 @@ export class AntagonistaScraperService extends AbstractScraperService {
     return articles;
   }
 
-  protected async extractTwoCol($: CheerioAPI, sufix): Promise<Article[]> {
+  protected async extractByType(
+    $: CheerioAPI,
+    sufix: string,
+    selector: string,
+    logIdentif: string,
+  ): Promise<Article[]> {
     const articles = [];
-    const elements = $(`.${sufix}-area__two-col .row .col`);
+    const elements = $(`.${sufix}-${selector}`);
     if (!elements.length) return [];
     let i = 0;
     for await (const e of elements.get()) {
@@ -114,23 +141,33 @@ export class AntagonistaScraperService extends AbstractScraperService {
 
       const category = this.getCategory(categoryText, link, sufix);
 
+      const { title } = this.getTitleLink(link.replace(`${this.url}/`, ''));
+
       if (category == 'esporte') {
-        this.logger.warn(`[Log WebScraping] Ignorando categoria ${category}`);
+        this.logger.warn(
+          `[Log WebScraping][${logIdentif}] Ignorando categoria ${category}: ${title}`,
+        );
         continue;
       }
 
-      const { title } = this.getTitleLink(link.replace(`${this.url}/`, ''));
-
       const date = await this.getElementValue(element, '.date-time__date');
+      const titleItem = await this.getElementValue(
+        element,
+        `.${sufix}-area__title-h3`,
+        '',
+        title,
+      );
+
+      if (titleItem.startsWith('Crusoé: ')) {
+        this.logger.warn(
+          `[Log WebScraping][${logIdentif}] Ignorando Notícia Crusoé ${titleItem}`,
+        );
+        continue;
+      }
 
       articles.push({
         journalId: this.getJournalId(link),
-        title: await this.getElementValue(
-          element,
-          `.${sufix}-area__title-h3`,
-          '',
-          title,
-        ),
+        title: titleItem,
         category,
         author: '',
         link,
@@ -143,7 +180,7 @@ export class AntagonistaScraperService extends AbstractScraperService {
   }
 
   private parseISO(dataString: string): string {
-    const partes = dataString.split(' ');
+    const partes = dataString.trim().split(' ');
     const dataPartes = partes[0].split('.');
 
     if (dataPartes.length < 3) return '';
@@ -157,7 +194,6 @@ export class AntagonistaScraperService extends AbstractScraperService {
     const minutos = Number(horaPartes[1]);
 
     const data = new Date(ano, mes, dia, horas, minutos);
-
     return data.toISOString();
   }
 

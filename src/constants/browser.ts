@@ -1,1 +1,1 @@
-export const HEADLESS = false;
+export const HEADLESS = true;

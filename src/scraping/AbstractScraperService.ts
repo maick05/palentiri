@@ -24,6 +24,10 @@ export abstract class AbstractScraperService {
   protected async goToPage(sufix = ''): Promise<puppeteer.Page> {
     await this.initBrowser();
     const page = await this.browser.newPage();
+    await page.setUserAgent(
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.159 Safari/537.36',
+    );
+
     await page.setViewport({ width: 1380, height: 1080 });
 
     this.logger.log(`Chamando url... ${this.url}/${sufix}`);
