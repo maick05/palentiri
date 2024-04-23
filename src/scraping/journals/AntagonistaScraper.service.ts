@@ -27,20 +27,54 @@ export class AntagonistaScraperService extends AbstractScraperService {
     sufix = '',
   ): Promise<Article[]> {
     const highLight = await this.extractHighlight($, sufix);
-    const twoCol = await this.extractByType(
+    const twoCol = await this.extractBySection(
       $,
       sufix,
       'area__two-col .row .col',
       'TwoCol',
     );
-    const rightHighLight = await this.extractByType(
+    const rightHighLight = await this.extractBySection(
       $,
       sufix,
       'area__item-highlight',
       'HighLight',
     );
+    const areaItem = await this.extractBySection(
+      $,
+      sufix,
+      'area__item-',
+      'AreaItem',
+    );
+    const areaItemLarge = await this.extractBySection(
+      $,
+      sufix,
+      'area__item-large',
+      'AreaItemLarge',
+    );
 
-    return [...highLight, ...twoCol, ...rightHighLight];
+    const mostRead = await this.extractBySection(
+      $,
+      sufix,
+      'area__item-most-read',
+      'MostRead',
+    );
+
+    const areaItemText = await this.extractBySection(
+      $,
+      sufix,
+      'area__item-text',
+      'AreaItemText',
+    );
+
+    return [
+      ...highLight,
+      ...twoCol,
+      ...rightHighLight,
+      ...areaItem,
+      ...areaItemLarge,
+      ...mostRead,
+      ...areaItemText,
+    ];
   }
 
   protected async extractHighlight($: CheerioAPI, sufix): Promise<Article[]> {
@@ -112,7 +146,7 @@ export class AntagonistaScraperService extends AbstractScraperService {
     return articles;
   }
 
-  protected async extractByType(
+  protected async extractBySection(
     $: CheerioAPI,
     sufix: string,
     selector: string,
@@ -169,7 +203,7 @@ export class AntagonistaScraperService extends AbstractScraperService {
         journalId: this.getJournalId(link),
         title: titleItem,
         category,
-        author: '',
+        author: await this.getElementValue(element, `.${sufix}-area__author`),
         link,
         company: this.companyName,
         resume: await this.getElementValue(element, 'p', ''),
