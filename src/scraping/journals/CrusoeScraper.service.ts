@@ -32,7 +32,7 @@ export class CrusoeScraperService extends AbstractScraperService {
     return data.toISOString();
   }
 
-  protected async extractItems(page: Page, $: CheerioAPI): Promise<Article[]> {
+  protected async extractItems($: CheerioAPI): Promise<Article[]> {
     const articles = [];
     const elements = $('.post.hasimg');
     if (!elements.length) return [];

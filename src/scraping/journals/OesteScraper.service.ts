@@ -35,7 +35,6 @@ export class OesteScraperService extends AbstractScraperService {
   }
 
   protected async extractItems(
-    page: Page,
     $: CheerioAPI,
     sufix?: string,
   ): Promise<Article[]> {

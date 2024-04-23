@@ -41,7 +41,7 @@ export abstract class AbstractScraperService {
 
     const page = await this.goToPage(sufix);
     const contentHtml = await this.evaluate(page, sufix);
-    const items = this.extractItems(page, contentHtml, sufix);
+    const items = this.extractItems(contentHtml, sufix);
 
     return items;
   }
@@ -54,7 +54,6 @@ export abstract class AbstractScraperService {
   }
 
   protected abstract extractItems(
-    page: Page,
     $: CheerioAPI,
     sufix?: string,
   ): Promise<Article[]>;

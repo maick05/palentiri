@@ -21,11 +21,7 @@ export class AntagonistaScraperService extends AbstractScraperService {
     return super.evaluate(page, sufix);
   }
 
-  protected async extractItems(
-    page: Page,
-    $: CheerioAPI,
-    sufix = '',
-  ): Promise<Article[]> {
+  protected async extractItems($: CheerioAPI, sufix = ''): Promise<Article[]> {
     const highLight = await this.extractHighlight($, sufix);
     const twoCol = await this.extractBySection(
       $,
