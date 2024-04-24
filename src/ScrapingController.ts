@@ -5,6 +5,7 @@ import { CrusoeScraperService } from './scraping/orgs/CrusoeScraper.service';
 import { AntagonistaScraperService } from './scraping/orgs/AntagonistaScraper.service';
 import { GazetaDoPovoScraperService } from './scraping/orgs/GazetaDoPovoScraper.service';
 import { Poder360ScraperService } from './scraping/orgs/Poder360Scraper.service';
+import { GazetaLibertariaScraperService } from './scraping/orgs/GazetaLibertariaScraper.service';
 
 @Controller('scraping')
 export class ScrapingController {
@@ -14,6 +15,7 @@ export class ScrapingController {
     private readonly antagonistaService: AntagonistaScraperService,
     private readonly gazetaDoPovoService: GazetaDoPovoScraperService,
     private readonly poder360Service: Poder360ScraperService,
+    private readonly gazetaLibertariaService: GazetaLibertariaScraperService,
   ) {}
 
   @Get('/:company/:sufix')
@@ -40,10 +42,12 @@ export class ScrapingController {
         return this.crusoeService.scrapeNewsList();
       case 'antagonista':
         return this.antagonistaService.scrapeNewsList(sufix);
-      case 'gazeta':
+      case 'gazeta_povo':
         return this.gazetaDoPovoService.scrapeNewsList();
       case 'poder360':
         return this.poder360Service.scrapeNewsList();
+      case 'gazeta_libertaria':
+        return this.gazetaLibertariaService.scrapeNewsList();
       default:
         throw new BadRequestException('Invalid News Org Name.');
     }

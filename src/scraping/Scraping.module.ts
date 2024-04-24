@@ -5,6 +5,7 @@ import { ScrapingController } from 'src/ScrapingController';
 import { AntagonistaScraperService } from './orgs/AntagonistaScraper.service';
 import { GazetaDoPovoScraperService } from './orgs/GazetaDoPovoScraper.service';
 import { Poder360ScraperService } from './orgs/Poder360Scraper.service';
+import { GazetaLibertariaScraperService } from './orgs/GazetaLibertariaScraper.service';
 
 @Module({
   controllers: [ScrapingController],
@@ -14,6 +15,7 @@ import { Poder360ScraperService } from './orgs/Poder360Scraper.service';
     AntagonistaScraperService,
     GazetaDoPovoScraperService,
     Poder360ScraperService,
+    GazetaLibertariaScraperService,
   ],
   exports: [
     OesteScraperService,
@@ -21,6 +23,7 @@ import { Poder360ScraperService } from './orgs/Poder360Scraper.service';
     AntagonistaScraperService,
     GazetaDoPovoScraperService,
     Poder360ScraperService,
+    GazetaLibertariaScraperService,
   ],
 })
 export class ScrapingModule {}

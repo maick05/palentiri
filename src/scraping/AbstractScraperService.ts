@@ -41,9 +41,9 @@ export abstract class AbstractScraperService {
       );
 
       await page.setViewport({ width: 1380, height: 1080 });
-
-      this.logger.log(`Chamando url... ${this.url}/${sufix}`);
-      await page.goto(`${this.url}/${sufix}`, { waitUntil: 'networkidle2' });
+      const url = sufix ? `${this.url}/${sufix}` : this.url;
+      this.logger.log(`Chamando url... '${url}'`);
+      await page.goto(url, { waitUntil: 'networkidle2' });
       return page;
     } catch (err) {
       throw new InternalServerErrorException(
