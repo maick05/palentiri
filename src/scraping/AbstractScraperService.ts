@@ -83,7 +83,7 @@ export abstract class AbstractScraperService {
     const articles = [];
     let elements;
     try {
-      elements = $(this.elementsSelector);
+      elements = $(this.elementsSelector).slice(0, 39);
     } catch (err) {
       throw new InternalServerErrorException(
         `Erro carregar html Cheerio: ${JSON.stringify(err)}`,
@@ -142,14 +142,14 @@ export abstract class AbstractScraperService {
   }
 
   protected cleanItems(articles: Article[]): Article[] {
-    return articles;
-    // const seen = new Map();
-    // return articles.filter((article) => {
-    //   if (!seen.has(article.orgId)) {
-    //     seen.set(article.orgId, true);
-    //     return true;
-    //   }
-    //   return false;
-    // });
+    // return articles;
+    const seen = new Map();
+    return articles.filter((article) => {
+      if (!seen.has(article.orgId)) {
+        seen.set(article.orgId, true);
+        return true;
+      }
+      return false;
+    });
   }
 }
