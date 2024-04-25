@@ -7,7 +7,7 @@ import {
 import * as puppeteer from 'puppeteer';
 import { Page } from 'puppeteer';
 import { HEADLESS } from 'src/constants/browser';
-import { Article } from 'src/interface/Article';
+import { ArticleDto } from 'src/interface/Article';
 import cheerio, { Cheerio, CheerioAPI } from 'cheerio';
 
 export abstract class AbstractScraperService {
@@ -16,7 +16,7 @@ export abstract class AbstractScraperService {
   protected url: string;
   protected validSufixes = [];
   protected logger: Logger = new Logger(AbstractScraperService.name);
-  protected companyName;
+  protected publisher;
   protected elementsSelector;
 
   private async initBrowser() {
@@ -52,7 +52,7 @@ export abstract class AbstractScraperService {
     }
   }
 
-  public async scrapeNewsList(sufix = ''): Promise<Article[]> {
+  public async scrapeNewsList(sufix = ''): Promise<ArticleDto[]> {
     if (
       (this.validSufixes.length && !this.validSufixes.includes(sufix)) ||
       (!this.validSufixes.length && sufix.length)
@@ -79,7 +79,7 @@ export abstract class AbstractScraperService {
     return cheerio.load(html);
   }
 
-  protected extractItems($: CheerioAPI, sufix = ''): Article[] {
+  protected extractItems($: CheerioAPI, sufix = ''): ArticleDto[] {
     const articles = [];
     let elements;
     try {
@@ -109,7 +109,7 @@ export abstract class AbstractScraperService {
     $: CheerioAPI,
     element,
     sufix?: string,
-  ): Article;
+  ): ArticleDto;
 
   public async closeBrowser() {
     await this.browser.close();
@@ -141,7 +141,7 @@ export abstract class AbstractScraperService {
     return link.split('-').join('_').replace('/', '');
   }
 
-  protected cleanItems(articles: Article[]): Article[] {
+  protected cleanItems(articles: ArticleDto[]): ArticleDto[] {
     // return articles;
     const seen = new Map();
     return articles.filter((article) => {

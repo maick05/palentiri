@@ -20,10 +20,15 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@devseeder/typescript-commons": "^1.0.1",
     "@nestjs/common": "^9.0.0",
+    "@nestjs/config": "^3.2.2",
     "@nestjs/core": "^9.0.0",
+    "@nestjs/mongoose": "^10.0.6",
     "@nestjs/platform-express": "^9.0.0",
     "cheerio": "^1.0.0-rc.12",
+    "envkey": "^2.5.1",
+    "mongoose": "^8.3.2",
     "puppeteer": "^22.6.5",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.2.0"

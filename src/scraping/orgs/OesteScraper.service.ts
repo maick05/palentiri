@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { AbstractScraperService } from '../AbstractScraperService';
-import { Article } from 'src/interface/Article';
+import { ArticleDto } from 'src/interface/Article';
 import { Page } from 'puppeteer';
 import { CheerioAPI } from 'cheerio';
 
@@ -10,7 +10,7 @@ export class OesteScraperService extends AbstractScraperService {
     super();
     this.url = 'https://revistaoeste.com';
     this.validSufixes = ['politica', 'economia'];
-    this.companyName = 'Revista Oeste';
+    this.publisher = 'revista_oeste';
     this.elementsSelector = 'article.card-post--grid, article.card-post--list';
   }
 
@@ -39,7 +39,7 @@ export class OesteScraperService extends AbstractScraperService {
     $: CheerioAPI,
     element,
     sufix?: string,
-  ): Article {
+  ): ArticleDto {
     const link = this.getElementValue(element, '.card-post__title', 'href');
 
     const { title } = this.getTitleLink(
@@ -56,9 +56,10 @@ export class OesteScraperService extends AbstractScraperService {
         '',
       ),
       link,
-      company: this.companyName,
+      publisher: this.publisher,
       resume: this.getElementValue(element, 'p.text-base', ''),
       date: this.getElementValue(element, 'time', 'datetime'),
     };
   }
 }
+

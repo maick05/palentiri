@@ -1,4 +1,4 @@
-export interface Article {
+export interface ArticleDto {
   title: string;
   orgId: string;
   resume: string;
@@ -6,5 +6,5 @@ export interface Article {
   author: string;
   date: Date | string;
   link: string;
-  company: string;
+  publisher: string;
 }

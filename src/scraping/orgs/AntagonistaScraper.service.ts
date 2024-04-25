@@ -1,16 +1,17 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Injectable } from '@nestjs/common';
 import { AbstractScraperService } from '../AbstractScraperService';
-import { Article } from 'src/interface/Article';
+import { ArticleDto } from 'src/interface/Article';
 import { Page } from 'puppeteer';
 import { CheerioAPI } from 'cheerio';
+import { DateHelper } from '@devseeder/typescript-commons';
 
 @Injectable()
 export class AntagonistaScraperService extends AbstractScraperService {
   constructor() {
     super();
     this.url = 'https://oantagonista.com.br';
-    this.companyName = 'O Antagonista';
+    this.publisher = 'antagonista';
     this.validSufixes = ['ultimas-noticias', 'economia', 'mundo', 'brasil'];
   }
 
@@ -23,7 +24,7 @@ export class AntagonistaScraperService extends AbstractScraperService {
     return super.evaluate(page, sufix);
   }
 
-  protected extractItems($: CheerioAPI, sufix = ''): Article[] {
+  protected extractItems($: CheerioAPI, sufix = ''): ArticleDto[] {
     const fixedSufix = 'ultimas-noticias';
     const highLight = this.extractHighlight($, fixedSufix);
     const twoCol = this.extractBySection(
@@ -76,7 +77,7 @@ export class AntagonistaScraperService extends AbstractScraperService {
     ];
   }
 
-  protected extractHighlight($: CheerioAPI, sufix): Article[] {
+  protected extractHighlight($: CheerioAPI, sufix): ArticleDto[] {
     const articles = [];
     const elements = $(`.${sufix}-area__highlight .row .col`);
     if (!elements.length) return [];
@@ -111,7 +112,7 @@ export class AntagonistaScraperService extends AbstractScraperService {
               .eq(0)
               .text(),
           )
-        : new Date().toISOString();
+        : DateHelper.getLocaleDateNow().toISOString();
 
       const titleItem = this.getElementValue(
         element,
@@ -133,7 +134,7 @@ export class AntagonistaScraperService extends AbstractScraperService {
         category,
         author: '',
         link,
-        company: this.companyName,
+        publisher: this.publisher,
         resume: this.getElementValue(element, 'p', ''),
         date,
       });
@@ -146,7 +147,7 @@ export class AntagonistaScraperService extends AbstractScraperService {
     sufix: string,
     selector: string,
     logIdentif: string,
-  ): Article[] {
+  ): ArticleDto[] {
     const articles = [];
     const elements = $(`.${sufix}-${selector}`);
     if (!elements.length) return [];
@@ -198,9 +199,11 @@ export class AntagonistaScraperService extends AbstractScraperService {
         category,
         author: this.getElementValue(element, `.${sufix}-area__author`),
         link,
-        company: this.companyName,
+        publisher: this.publisher,
         resume: this.getElementValue(element, 'p', ''),
-        date: date ? this.parseISO(date) : new Date().toISOString(),
+        date: date
+          ? this.parseISO(date)
+          : DateHelper.getLocaleDateNow().toISOString(),
       });
     });
     return articles;
@@ -263,7 +266,7 @@ export class AntagonistaScraperService extends AbstractScraperService {
     $: CheerioAPI,
     element: any,
     sufix?: string,
-  ): Article {
+  ): ArticleDto {
     throw new Error('Method not implemented.');
   }
 }

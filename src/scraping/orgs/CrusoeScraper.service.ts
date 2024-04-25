@@ -1,14 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { AbstractScraperService } from '../AbstractScraperService';
-import { Article } from 'src/interface/Article';
+import { ArticleDto } from 'src/interface/Article';
 import { CheerioAPI } from 'cheerio';
+import { DateHelper } from '@devseeder/typescript-commons';
 
 @Injectable()
 export class CrusoeScraperService extends AbstractScraperService {
   constructor() {
     super();
     this.url = 'https://crusoe.com.br/#ultimas';
-    this.companyName = 'Revista Crusoé';
+    this.publisher = 'revista_crusoe';
     this.elementsSelector = '.post.hasimg';
   }
 
@@ -38,7 +39,7 @@ export class CrusoeScraperService extends AbstractScraperService {
     }
   }
 
-  protected extractArticleItem($: CheerioAPI, element): Article {
+  protected extractArticleItem($: CheerioAPI, element): ArticleDto {
     const link = this.getElementValue(element, '.link-internal123', 'href');
 
     const { title } = this.getTitleLink(
@@ -52,9 +53,11 @@ export class CrusoeScraperService extends AbstractScraperService {
       category: 'politica',
       author: this.getElementValue(element, '.creator .autor'),
       link,
-      company: this.companyName,
+      publisher: this.publisher,
       resume: this.getElementValue(element, 'p', ''),
-      date: date ? this.parseIso(date) : new Date().toISOString(),
+      date: date
+        ? this.parseIso(date)
+        : DateHelper.getLocaleDateNow().toISOString(),
     };
   }
 }

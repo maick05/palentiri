@@ -1,14 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { AbstractScraperService } from '../AbstractScraperService';
-import { Article } from 'src/interface/Article';
+import { ArticleDto } from 'src/interface/Article';
 import { CheerioAPI } from 'cheerio';
+import { DateHelper } from '@devseeder/typescript-commons';
 
 @Injectable()
 export class Poder360ScraperService extends AbstractScraperService {
   constructor() {
     super();
     this.url = 'https://www.poder360.com.br/poder-hoje';
-    this.companyName = 'poder360';
+    this.publisher = 'poder360';
     this.elementsSelector = '.archive-list__list li';
   }
 
@@ -46,7 +47,7 @@ export class Poder360ScraperService extends AbstractScraperService {
     }
   }
 
-  protected extractArticleItem($: CheerioAPI, element): Article | null {
+  protected extractArticleItem($: CheerioAPI, element): ArticleDto | null {
     const link = this.getElementValue(element, 'a', 'href');
     const { title } = this.getTitleLink(link);
     const category = this.getCategory(link);
@@ -72,9 +73,9 @@ export class Poder360ScraperService extends AbstractScraperService {
       category: category,
       author: '',
       link,
-      company: this.companyName,
+      publisher: this.publisher,
       resume: '',
-      date: date ? date : new Date().toISOString(),
+      date: date ? date : DateHelper.getLocaleDateNow().toISOString(),
     };
   }
 

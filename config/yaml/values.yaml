@@ -1,0 +1,16 @@
+auth:
+  jwt:
+    expires: '90000s'
+    secret: ${GLOBAL_API_JWT_SECRET}
+  url: http://auth.devseeder.com
+  clientToken: ${PETHELPER_API_AUTH_TOKEN}
+  scopeKey: DEVSEEDER/PALENTIRI/API
+database:
+  mongodb:
+    connection: 'mongodb+srv://${GLOBAL_API_MONGODB_USER}:${GLOBAL_API_MONGODB_PASSWORD}@${GLOBAL_API_MONGODB_URL_CONNECTION}${PALENTIRI_API_MONGODB_DATABASE}${GLOBAL_API_MONGODB_SUFIX_PARAMS}'
+api:
+  port: ${PALENTIRI_API_SERVER_PORT}
+doc:
+  version: 0.0.1
+  name: 'Palentiri Job Service'
+  projectKey: 'PALENTIRI'

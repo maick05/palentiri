@@ -1,55 +1,19 @@
-import { BadRequestException, Controller, Get, Param } from '@nestjs/common';
-import { OesteScraperService } from './scraping/orgs/OesteScraper.service';
-import { Article } from './interface/Article';
-import { CrusoeScraperService } from './scraping/orgs/CrusoeScraper.service';
-import { AntagonistaScraperService } from './scraping/orgs/AntagonistaScraper.service';
-import { GazetaDoPovoScraperService } from './scraping/orgs/GazetaDoPovoScraper.service';
-import { Poder360ScraperService } from './scraping/orgs/Poder360Scraper.service';
-import { GazetaLibertariaScraperService } from './scraping/orgs/GazetaLibertariaScraper.service';
+import { Body, Controller, Param, Post } from '@nestjs/common';
+import { JobsService } from './jobs/service/Jobs.service';
+import { JobKeyEnum } from './enum/JobKeyEnum';
 
 @Controller('scraping')
 export class ScrapingController {
-  constructor(
-    private readonly oesteService: OesteScraperService,
-    private readonly crusoeService: CrusoeScraperService,
-    private readonly antagonistaService: AntagonistaScraperService,
-    private readonly gazetaDoPovoService: GazetaDoPovoScraperService,
-    private readonly poder360Service: Poder360ScraperService,
-    private readonly gazetaLibertariaService: GazetaLibertariaScraperService,
-  ) {}
+  constructor(private readonly jobsService: JobsService) {}
 
-  @Get('/:company/:sufix')
+  @Post('/:publisher')
   scrapeBySufix(
-    @Param('company') company: string,
-    @Param('sufix') sufix?: string,
+    @Param('publisher') publisher: string,
+    @Body() body?: { sufix?: string },
   ) {
-    return this.scrapeNewsList(company, sufix);
-  }
-
-  @Get('/:company')
-  scrape(@Param('company') company: string) {
-    return this.scrapeNewsList(company);
-  }
-
-  private async scrapeNewsList(
-    company: string,
-    sufix = '',
-  ): Promise<Article[]> {
-    switch (company) {
-      case 'oeste':
-        return this.oesteService.scrapeNewsList(sufix);
-      case 'crusoe':
-        return this.crusoeService.scrapeNewsList();
-      case 'antagonista':
-        return this.antagonistaService.scrapeNewsList(sufix);
-      case 'gazeta_povo':
-        return this.gazetaDoPovoService.scrapeNewsList();
-      case 'poder360':
-        return this.poder360Service.scrapeNewsList();
-      case 'gazeta_libertaria':
-        return this.gazetaLibertariaService.scrapeNewsList();
-      default:
-        throw new BadRequestException('Invalid News Org Name.');
-    }
+    return this.jobsService.startJob(JobKeyEnum.SCRAPE_NEWS_LIST, {
+      publisher,
+      sufix: body?.sufix,
+    });
   }
 }

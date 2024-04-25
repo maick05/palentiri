@@ -1,32 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import { AbstractScraperService } from '../AbstractScraperService';
-import { Article } from 'src/interface/Article';
+import { ArticleDto } from 'src/interface/Article';
 import { CheerioAPI } from 'cheerio';
+import { DateHelper } from '@devseeder/typescript-commons';
 
 @Injectable()
 export class GazetaLibertariaScraperService extends AbstractScraperService {
   constructor() {
     super();
     this.url = 'https://gazetalibertaria.news/?s=';
-    this.companyName = 'gazeta_libertaria';
+    this.publisher = 'gazeta_libertaria';
     this.elementsSelector = '.post';
   }
 
-  private parseISO(dataString: string): string {
-    const partes = dataString.split(/[/ :]/);
-    if (partes.length < 5) return;
-
-    const dataFormatada = `${partes[1]}/${partes[0]}/${partes[2]} ${partes[3]}:${partes[4]}`;
-    try {
-      const data = new Date(dataFormatada);
-      return data.toISOString();
-    } catch {
-      this.logger.warn(`Data inválida: ${dataString}`);
-      return '';
-    }
-  }
-
-  protected extractArticleItem($: CheerioAPI, element): Article | null {
+  protected extractArticleItem($: CheerioAPI, element): ArticleDto | null {
     const link = this.getElementValue(element, '.entry-title a', 'href');
 
     const { title } = this.getTitleLink(
@@ -47,9 +34,9 @@ export class GazetaLibertariaScraperService extends AbstractScraperService {
       category: category,
       author: this.getElementValue(element, '.author.vcard a'),
       link,
-      company: this.companyName,
+      publisher: this.publisher,
       resume: this.getElementValue(element, '.entry-summary p'),
-      date: date ? date : new Date().toISOString(),
+      date: date ? date : DateHelper.getLocaleDateNow().toISOString(),
     };
   }
 
