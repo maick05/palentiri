@@ -112,7 +112,7 @@ export class AntagonistaScraperService extends AbstractScraperService {
               .eq(0)
               .text(),
           )
-        : DateHelper.getLocaleDateNow().toISOString();
+        : DateHelper.getDateNow().toISOString();
 
       const titleItem = this.getElementValue(
         element,
@@ -203,14 +203,14 @@ export class AntagonistaScraperService extends AbstractScraperService {
         resume: this.getElementValue(element, 'p', ''),
         date: date
           ? this.parseISO(date)
-          : DateHelper.getLocaleDateNow().toISOString(),
+          : DateHelper.getDateNow().toISOString(),
       });
     });
     return articles;
   }
 
   private parseISO(dataString: string): string {
-    const partes = dataString.split(' ');
+    const partes = dataString.trim().split(' ');
 
     if (partes.length < 2) return '';
 

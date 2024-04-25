@@ -1,11 +1,11 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { ArticleDto } from 'src/interface/Article';
-import { AntagonistaScraperService } from 'src/scraping/orgs/AntagonistaScraper.service';
-import { CrusoeScraperService } from 'src/scraping/orgs/CrusoeScraper.service';
-import { GazetaDoPovoScraperService } from 'src/scraping/orgs/GazetaDoPovoScraper.service';
-import { GazetaLibertariaScraperService } from 'src/scraping/orgs/GazetaLibertariaScraper.service';
-import { OesteScraperService } from 'src/scraping/orgs/OesteScraper.service';
-import { Poder360ScraperService } from 'src/scraping/orgs/Poder360Scraper.service';
+import { AntagonistaScraperService } from 'src/scraping/publishers/AntagonistaScraper.service';
+import { CrusoeScraperService } from 'src/scraping/publishers/CrusoeScraper.service';
+import { GazetaDoPovoScraperService } from 'src/scraping/publishers/GazetaDoPovoScraper.service';
+import { GazetaLibertariaScraperService } from 'src/scraping/publishers/GazetaLibertariaScraper.service';
+import { OesteScraperService } from 'src/scraping/publishers/OesteScraper.service';
+import { Poder360ScraperService } from 'src/scraping/publishers/Poder360Scraper.service';
 import { AbstractService, DateHelper } from '@devseeder/typescript-commons';
 import { ArticlesRepository } from 'src/repository/Articles.repository';
 import { Article } from 'src/schemas/articles.schema';
@@ -47,7 +47,7 @@ export class ScrapeNewsJobService extends AbstractService {
       await this.saveArticle(jobId, item);
       savedArticles.push(item);
     }
-    this.logger.log('Articles saved.');
+    this.logger.log('Database proccess finished.');
     return savedArticles;
   }
 
@@ -64,12 +64,13 @@ export class ScrapeNewsJobService extends AbstractService {
       article.orgId = item.orgId;
       article.link = item.link;
       article.grouped = false;
-      article.jobDate = DateHelper.getLocaleDateNow();
+      article.jobDate = DateHelper.getDateNow();
       article.classified = false;
       article.active = true;
 
       await this.articlesRepository.create(article);
     } catch (err) {
+      this.logger.error(err);
       this.logger.error(`Erro ao salvar artigo ${JSON.stringify(item)}`);
     }
   }
@@ -84,6 +85,12 @@ export class ScrapeNewsJobService extends AbstractService {
         { link },
       ],
     });
+
+    if (articleDB > 0)
+      this.logger.warn(
+        `Article '${article.orgId}' already exists, skipping...`,
+      );
+
     return articleDB > 0;
   }
 

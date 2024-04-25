@@ -97,8 +97,9 @@ export abstract class AbstractScraperService {
         if (!item) return;
         articles.push(item);
       } catch (err) {
+        this.logger.error(err);
         throw new InternalServerErrorException(
-          `Erro ao extrair item '${elem}': ${JSON.stringify(err)}`,
+          `Erro ao extrair item '${i}': ${err.message}`,
         );
       }
     });

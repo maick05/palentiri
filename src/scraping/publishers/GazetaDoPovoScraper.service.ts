@@ -6,9 +6,11 @@ import { DateHelper } from '@devseeder/typescript-commons';
 
 @Injectable()
 export class GazetaDoPovoScraperService extends AbstractScraperService {
+  private urlBase;
   constructor() {
     super();
     this.url = 'https://www.gazetadopovo.com.br/ultimas-noticias';
+    this.urlBase = 'https://www.gazetadopovo.com.br';
     this.publisher = 'gazeta_povo';
     this.elementsSelector = '.item-list';
   }
@@ -48,12 +50,10 @@ export class GazetaDoPovoScraperService extends AbstractScraperService {
       title: this.getElementValue(element, '.post-title', '', title),
       category: category,
       author: '',
-      link: `${this.url}${link}`,
+      link: `${this.urlBase}${link}`,
       publisher: this.publisher,
       resume: this.getElementValue(element, '.post-caption'),
-      date: date
-        ? this.parseISO(date)
-        : DateHelper.getLocaleDateNow().toISOString(),
+      date: date ? this.parseISO(date) : DateHelper.getDateNow().toISOString(),
     };
   }
 

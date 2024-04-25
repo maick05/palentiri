@@ -36,7 +36,7 @@ export class GazetaLibertariaScraperService extends AbstractScraperService {
       link,
       publisher: this.publisher,
       resume: this.getElementValue(element, '.entry-summary p'),
-      date: date ? date : DateHelper.getLocaleDateNow().toISOString(),
+      date: date ? date : DateHelper.getDateNow().toISOString(),
     };
   }
 

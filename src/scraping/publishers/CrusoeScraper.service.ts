@@ -55,9 +55,7 @@ export class CrusoeScraperService extends AbstractScraperService {
       link,
       publisher: this.publisher,
       resume: this.getElementValue(element, 'p', ''),
-      date: date
-        ? this.parseIso(date)
-        : DateHelper.getLocaleDateNow().toISOString(),
+      date: date ? this.parseIso(date) : DateHelper.getDateNow().toISOString(),
     };
   }
 }

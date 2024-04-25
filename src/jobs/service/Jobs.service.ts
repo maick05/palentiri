@@ -41,7 +41,7 @@ export class JobsService extends AbstractService {
     try {
       const jobEntity = new Job();
       jobEntity.jobKey = job;
-      jobEntity.startDate = DateHelper.getLocaleDateNow();
+      jobEntity.startDate = DateHelper.getDateNow();
       jobEntity.finished = false;
       jobEntity.inputParams = jobParams;
       jobEntity.active = true;
@@ -49,7 +49,6 @@ export class JobsService extends AbstractService {
       this.logger.log(`Creating database job... ${JSON.stringify(jobEntity)}`);
 
       const jobId = await this.jobsRepository.create(jobEntity);
-      console.log(jobId);
       return jobId['_id'].toString();
     } catch (err) {
       this.logger.error(err);
@@ -65,7 +64,7 @@ export class JobsService extends AbstractService {
   ): Promise<void> {
     this.logger.log(`Finishing job '${jobId}' on database...`);
     await this.jobsRepository.updateOneById(jobId, {
-      endDate: DateHelper.getLocaleDateNow(),
+      endDate: DateHelper.getDateNow(),
       finished: true,
       jobResult: jobResult,
       success: true,
@@ -76,7 +75,7 @@ export class JobsService extends AbstractService {
   private async finishJobError(jobId: string, error: any): Promise<void> {
     this.logger.log(`Finishing job[Error] '${jobId}' on database...`);
     await this.jobsRepository.updateOneById(jobId, {
-      endDate: DateHelper.getLocaleDateNow(),
+      endDate: DateHelper.getDateNow(),
       finished: true,
       success: false,
       error,

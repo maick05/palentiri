@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
-import { OesteScraperService } from './orgs/OesteScraper.service';
-import { CrusoeScraperService } from './orgs/CrusoeScraper.service';
-import { AntagonistaScraperService } from './orgs/AntagonistaScraper.service';
-import { GazetaDoPovoScraperService } from './orgs/GazetaDoPovoScraper.service';
-import { Poder360ScraperService } from './orgs/Poder360Scraper.service';
-import { GazetaLibertariaScraperService } from './orgs/GazetaLibertariaScraper.service';
+import { OesteScraperService } from './publishers/OesteScraper.service';
+import { CrusoeScraperService } from './publishers/CrusoeScraper.service';
+import { AntagonistaScraperService } from './publishers/AntagonistaScraper.service';
+import { GazetaDoPovoScraperService } from './publishers/GazetaDoPovoScraper.service';
+import { Poder360ScraperService } from './publishers/Poder360Scraper.service';
+import { GazetaLibertariaScraperService } from './publishers/GazetaLibertariaScraper.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Article, ArticlesSchema } from 'src/schemas/articles.schema';
 import { ArticlesRepository } from 'src/repository/Articles.repository';

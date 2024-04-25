@@ -75,7 +75,7 @@ export class Poder360ScraperService extends AbstractScraperService {
       link,
       publisher: this.publisher,
       resume: '',
-      date: date ? date : DateHelper.getLocaleDateNow().toISOString(),
+      date: date ? date : DateHelper.getDateNow().toISOString(),
     };
   }
 
