@@ -96,9 +96,9 @@ export class ScrapeNewsJobService extends AbstractService {
 
   async executeScraper(publisher: string, sufix = ''): Promise<ArticleDto[]> {
     switch (publisher) {
-      case 'oeste':
+      case 'revista_oeste':
         return this.oesteService.scrapeNewsList(sufix);
-      case 'crusoe':
+      case 'revista_crusoe':
         return this.crusoeService.scrapeNewsList();
       case 'antagonista':
         return this.antagonistaService.scrapeNewsList(sufix);

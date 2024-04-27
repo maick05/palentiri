@@ -10,21 +10,23 @@ import { JobKeyEnum } from 'src/enum/JobKeyEnum';
 import { Job } from 'src/schemas/jobs.schema';
 import { JobsRepository } from 'src/repository/Jobs.repository';
 import { JobDataResult, JobResponse, JobResult } from 'src/interface/JobResult';
+import { AnalyzeCategoryNewsJobService } from './AnalyzeCategoryNewsJob.service';
 
 @Injectable()
 export class JobsService extends AbstractService {
   constructor(
     private readonly jobsRepository: JobsRepository,
     private readonly scrapeNewsJobService: ScrapeNewsJobService,
+    private readonly analyzeCategoryNewsJobService: AnalyzeCategoryNewsJobService,
   ) {
     super();
   }
 
-  async startJob(job: string, jobParams: JobParams): Promise<JobResponse> {
+  async startJob(job: string, jobParams?: JobParams): Promise<JobResponse> {
     const jobId = await this.createDatabaseJob(job, jobParams);
     try {
       this.logger.log(`Starting job '${job}'...`);
-      const jobResult = await this.executeJob(job, jobParams, jobId);
+      const jobResult = await this.executeJob(job, jobId, jobParams);
       await this.finishJobSuccess(jobId, jobResult.result);
       this.logger.log(`Job Finished`);
       return { jobId, success: true, jobResult };
@@ -85,8 +87,8 @@ export class JobsService extends AbstractService {
 
   private async executeJob(
     job: string,
-    jobParams: JobParams,
     jobId: string,
+    jobParams?: JobParams,
   ): Promise<JobDataResult<any>> {
     try {
       let jobResult;
@@ -97,6 +99,9 @@ export class JobsService extends AbstractService {
             jobId,
             jobParams.sufix,
           );
+          break;
+        case JobKeyEnum.ANALYZE_NEWS:
+          jobResult = await this.analyzeCategoryNewsJobService.execute();
           break;
         default:
           throw new BadRequestException('Invalid Job');

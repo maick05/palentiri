@@ -10,6 +10,11 @@ database:
     connection: 'mongodb+srv://${GLOBAL_API_MONGODB_USER}:${GLOBAL_API_MONGODB_PASSWORD}@${GLOBAL_API_MONGODB_URL_CONNECTION}${PALENTIRI_API_MONGODB_DATABASE}${GLOBAL_API_MONGODB_SUFIX_PARAMS}'
 api:
   port: ${PALENTIRI_API_SERVER_PORT}
+chatgpt:
+  api:
+    url: ${GLOBAL_CHATGPT_API_URL}
+    key: ${GLOBAL_CHATGPT_API_KEY}
+    model: gpt-3.5-turbo
 doc:
   version: 0.0.1
   name: 'Palentiri Job Service'

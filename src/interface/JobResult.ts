@@ -1,4 +1,4 @@
-export type JobResult = ScrapeNewsListResult;
+export type JobResult = ScrapeNewsListResult | AnalyzedNewsResult;
 
 export interface JobDataResult<JobData> {
   data: JobData;
@@ -14,4 +14,11 @@ export interface JobResponse {
 
 export interface ScrapeNewsListResult {
   collectedNews: number;
+}
+
+export interface AnalyzedNewsResult {
+  collectedArticles: number;
+  invalidCategoryArticles: number;
+  groupedNews: number;
+  oldArticles: number;
 }

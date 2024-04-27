@@ -3,9 +3,11 @@ import { JobsModule } from './jobs/Jobs.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import configuration from './config/configuration';
+import { TaskScheduleModule } from './schedule/TaskSchedule.module';
 
 @Module({
   imports: [
+    TaskScheduleModule,
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
