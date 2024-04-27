@@ -11,18 +11,17 @@ export class ChatGptService {
     newsArray: ArticleDocument[],
   ): Promise<ChatGptResponse> {
     const prompt = this.buildPrompt(newsArray);
-    console.log(prompt);
     return this.chatGptClient.generateTextResponse(prompt);
   }
 
   private buildPrompt(newsArray: ArticleDocument[]): string {
     let prompt =
-      'Dadas as seguintes notícias, identifique quais não são sobre política ou economia e retorne um array com o campo id com os id da noticia inválida e o campo category com categoria correta para cada uma:';
+      'Dadas as seguintes notícias, identifique quais não são sobre política ou economia e retorne apenas um um array JSON (sem nenhum comentário) com o campo id com os id da noticia inválida e o campo category com categoria correta para cada uma:';
     newsArray.forEach((news) => {
       prompt += `\nID: ${news._id}, Título: ${news.title} ${
         news.resume ? ', Descrição: ' + news.resume : ''
       }`;
-    }); //
+    });
     return prompt;
   }
 }

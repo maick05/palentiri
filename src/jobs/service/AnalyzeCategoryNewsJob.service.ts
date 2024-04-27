@@ -5,6 +5,10 @@ import { ArticleDocument } from 'src/schemas/articles.schema';
 import { JobDataResult } from 'src/interface/JobResult';
 import { ChatGptService } from 'src/ia/ChatGpt.service';
 import { InvalidCategoryGptResponse } from 'src/interface/ChatGptResponse';
+import {
+  VALID_EXTRA_CATEGORIES,
+  VALID_KEY_WORDS,
+} from 'src/constants/articleFilter';
 
 @Injectable()
 export class AnalyzeCategoryNewsJobService extends AbstractService {
@@ -28,12 +32,18 @@ export class AnalyzeCategoryNewsJobService extends AbstractService {
       const chatGptResponse = await this.chatGptService.analyzeCategoryNews(
         chunk,
       );
+
+      this.logger.log(chatGptResponse.choices[0].message.content);
       const responses = this.parseResponseToJSON(
         chatGptResponse.choices[0].message.content,
       );
       allResponses.push(...responses);
     }
-    return this.mapOutput(articles, JSON.stringify(allResponses));
+
+    return this.mapOutput(
+      articles,
+      this.filterInvalidArticles(articles, allResponses),
+    );
   }
 
   private async getCollectedArticles(): Promise<ArticleDocument[]> {
@@ -53,13 +63,13 @@ export class AnalyzeCategoryNewsJobService extends AbstractService {
 
   private mapOutput(
     articles: ArticleDocument[],
-    chatResponse: string,
+    chatGptResponse: InvalidCategoryGptResponse[],
   ): JobDataResult<InvalidCategoryGptResponse[]> {
-    const chatGptResponse = JSON.parse(
-      chatResponse,
-    ) as InvalidCategoryGptResponse[];
     return {
-      data: chatGptResponse,
+      data: chatGptResponse.map((item) => ({
+        ...item,
+        ...articles.find((article) => article._id == item.id),
+      })),
       result: {
         collectedArticles: articles.length,
         invalidCategoryArticles: chatGptResponse.length,
@@ -70,7 +80,37 @@ export class AnalyzeCategoryNewsJobService extends AbstractService {
   }
 
   private parseResponseToJSON(content: string): InvalidCategoryGptResponse[] {
-    const str = content.replaceAll('`', '').replaceAll('json', '').trim();
-    return JSON.parse(str) as InvalidCategoryGptResponse[];
+    try {
+      const str = content.replaceAll('`', '').replaceAll('json', '').trim();
+      return JSON.parse(str) as InvalidCategoryGptResponse[];
+    } catch (err) {
+      console.log(err);
+      this.logger.error(`Erro ao fazer parse da resposta: ${err}`);
+    }
+  }
+
+  private filterInvalidArticles(
+    articles: ArticleDocument[],
+    items: InvalidCategoryGptResponse[],
+  ): InvalidCategoryGptResponse[] {
+    return items.filter((item) => {
+      const article = articles.find((art) => art._id == item.id);
+      if (!article) return false;
+      return (
+        !VALID_EXTRA_CATEGORIES.includes(item.category) &&
+        !this.containValidKeyWorld(article.title) &&
+        !this.containValidKeyWorld(article.resume)
+      );
+    });
+  }
+
+  private containValidKeyWorld(str: string): boolean {
+    if (!str) return false;
+    const lowerCaseStr = str.toLowerCase();
+    return VALID_KEY_WORDS.some((word) => {
+      const lowerCaseWord = word.toLowerCase();
+      const regex = new RegExp(`\\b${lowerCaseWord}\\b`, 'i');
+      return regex.test(lowerCaseStr);
+    });
   }
 }

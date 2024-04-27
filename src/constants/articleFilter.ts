@@ -1,1 +1,31 @@
+export const VALID_EXTRA_CATEGORIES = [
+  'politica',
+  'política',
+  'governo',
+  'stf',
+  'judiciário',
+  'história',
+  'relações internacionais',
+  'terrorismo',
+  'geografia',
+  'economia',
+  'internacional',
+  'gestão pública',
+  'justiça',
+];
 
+export const VALID_KEY_WORDS = [
+  'lula',
+  'bolsonaro',
+  'musk',
+  'dilma',
+  'stf',
+  'STF',
+  'moraes',
+  'michelle',
+  'ministro',
+  'ministros',
+  'terrorismo',
+  'terroristas',
+  'hamas',
+];
