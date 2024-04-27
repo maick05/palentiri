@@ -12,6 +12,7 @@ export const VALID_EXTRA_CATEGORIES = [
   'internacional',
   'gestão pública',
   'justiça',
+  'justica',
 ];
 
 export const VALID_KEY_WORDS = [
@@ -28,4 +29,17 @@ export const VALID_KEY_WORDS = [
   'terrorismo',
   'terroristas',
   'hamas',
+  'constituição',
+  'inconstitucionalidade',
+  'câmara',
+  'presidente',
+  'autoritarismo',
+  'judiciário',
+  'judiciario',
+  'CNJ',
+  'eleicoes',
+  'eleições',
+  'politica',
+  'política',
+  'TSE',
 ];

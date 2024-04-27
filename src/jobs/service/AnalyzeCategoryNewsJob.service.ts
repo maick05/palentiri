@@ -52,6 +52,9 @@ export class AnalyzeCategoryNewsJobService extends AbstractService {
         classified: false,
         grouped: false,
         active: true,
+        publisher: {
+          $in: ['revista_crusoe', 'antagonista', 'gazeta_povo', 'poder360'],
+        },
       },
       { _id: 1, title: 1, resume: 1 },
     );
@@ -86,6 +89,7 @@ export class AnalyzeCategoryNewsJobService extends AbstractService {
     } catch (err) {
       console.log(err);
       this.logger.error(`Erro ao fazer parse da resposta: ${err}`);
+      return [];
     }
   }
 
@@ -97,7 +101,7 @@ export class AnalyzeCategoryNewsJobService extends AbstractService {
       const article = articles.find((art) => art._id == item.id);
       if (!article) return false;
       return (
-        !VALID_EXTRA_CATEGORIES.includes(item.category) &&
+        !VALID_EXTRA_CATEGORIES.includes(item.category.toLowerCase()) &&
         !this.containValidKeyWorld(article.title) &&
         !this.containValidKeyWorld(article.resume)
       );
