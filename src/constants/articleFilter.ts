@@ -13,6 +13,8 @@ export const VALID_EXTRA_CATEGORIES = [
   'gestão pública',
   'justiça',
   'justica',
+  'outro',
+  'outros',
 ];
 
 export const VALID_KEY_WORDS = [
@@ -42,4 +44,5 @@ export const VALID_KEY_WORDS = [
   'politica',
   'política',
   'TSE',
+  'narrativas',
 ];

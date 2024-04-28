@@ -13,3 +13,8 @@ export interface InvalidCategoryGptResponse {
   resume?: string;
   _id?: string;
 }
+
+export interface GroupedNewsGptResponse {
+  newsGroup: string;
+  ids: string[];
+}

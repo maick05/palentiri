@@ -2,11 +2,13 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Article, ArticlesSchema } from 'src/schemas/articles.schema';
 import { ArticlesRepository } from 'src/repository/Articles.repository';
-import { AnalyzeCategoryNewsJobService } from 'src/jobs/service/AnalyzeCategoryNewsJob.service';
 import { ChatGptService } from './ChatGpt.service';
 import { ChatGptClient } from './ChatGptClient';
 import { InjectionTokenEnum } from 'src/enum/InjectionTokenEnum';
 import { ConfigService } from '@nestjs/config';
+import { AnalyzeNewsJobService } from 'src/jobs/service/AnalyzeNewsJob.service';
+import { AnalyzeCategoryNewsService } from 'src/jobs/service/analyze/AnalyzeCategoryNews.service';
+import { GroupNewsService } from 'src/jobs/service/analyze/GroupNews.service';
 
 @Module({
   imports: [
@@ -15,7 +17,9 @@ import { ConfigService } from '@nestjs/config';
   controllers: [],
   providers: [
     ArticlesRepository,
-    AnalyzeCategoryNewsJobService,
+    AnalyzeCategoryNewsService,
+    GroupNewsService,
+    AnalyzeNewsJobService,
     ChatGptService,
     ChatGptClient,
     {
@@ -33,7 +37,9 @@ import { ConfigService } from '@nestjs/config';
   ],
   exports: [
     ArticlesRepository,
-    AnalyzeCategoryNewsJobService,
+    AnalyzeCategoryNewsService,
+    GroupNewsService,
+    AnalyzeNewsJobService,
     ChatGptService,
     ChatGptClient,
   ],

@@ -19,6 +19,6 @@ export interface ScrapeNewsListResult {
 export interface AnalyzedNewsResult {
   collectedArticles: number;
   invalidCategoryArticles: number;
-  groupedNews: number;
-  oldArticles: number;
+  groupedNews?: number;
+  oldArticles?: number;
 }

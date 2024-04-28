@@ -10,14 +10,14 @@ import { JobKeyEnum } from 'src/enum/JobKeyEnum';
 import { Job } from 'src/schemas/jobs.schema';
 import { JobsRepository } from 'src/repository/Jobs.repository';
 import { JobDataResult, JobResponse, JobResult } from 'src/interface/JobResult';
-import { AnalyzeCategoryNewsJobService } from './AnalyzeCategoryNewsJob.service';
+import { AnalyzeNewsJobService } from './AnalyzeNewsJob.service';
 
 @Injectable()
 export class JobsService extends AbstractService {
   constructor(
     private readonly jobsRepository: JobsRepository,
     private readonly scrapeNewsJobService: ScrapeNewsJobService,
-    private readonly analyzeCategoryNewsJobService: AnalyzeCategoryNewsJobService,
+    private readonly analyzeNewsJobService: AnalyzeNewsJobService,
   ) {
     super();
   }
@@ -101,7 +101,7 @@ export class JobsService extends AbstractService {
           );
           break;
         case JobKeyEnum.ANALYZE_NEWS:
-          jobResult = await this.analyzeCategoryNewsJobService.execute();
+          jobResult = await this.analyzeNewsJobService.execute();
           break;
         default:
           throw new BadRequestException('Invalid Job');
